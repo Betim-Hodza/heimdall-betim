@@ -26,6 +26,7 @@ limitations under the License.
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace heimdall {
 
@@ -97,6 +98,7 @@ struct ComponentInfo {
     std::vector<std::string> sourceFiles;   ///< List of source files
     std::vector<std::string> functions;     ///< List of function names from DWARF
     std::vector<std::string> compileUnits;  ///< List of compile units from DWARF
+    std::map<std::string, std::string> properties; ///< Additional properties/metadata
 
     bool wasProcessed = false;                    ///< Whether the component has been processed
     std::string processingError;                  ///< Error message if processing failed
@@ -200,6 +202,20 @@ struct ComponentInfo {
     void setDetectedBy(LinkerType linker);
 
     /**
+     * @brief Add a property to the component
+     * @param key The property key
+     * @param value The property value
+     */
+    void addProperty(const std::string& key, const std::string& value);
+
+    /**
+     * @brief Get a property value
+     * @param key The property key
+     * @return The property value, or empty string if not found
+     */
+    [[nodiscard]] std::string getProperty(const std::string& key) const;
+
+    /**
      * @brief Mark the component as a system library
      */
     void markAsSystemLibrary();
@@ -232,9 +248,10 @@ struct ComponentInfo {
 
     /**
      * @brief Get the file type as a string
+     * @param spdxVersion The SPDX version (optional, default empty)
      * @return String representation of the file type
      */
-    [[nodiscard]] std::string getFileTypeString() const;
+    [[nodiscard]] std::string getFileTypeString(const std::string& spdxVersion = "") const;
 
     /**
      * @brief Get the linker type as a string

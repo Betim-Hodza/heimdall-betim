@@ -6,12 +6,13 @@ A comprehensive Software Bill of Materials (SBOM) generation plugin that works w
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Platform Support](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux-green.svg)](#supported-platforms)
-[![Tests](https://img.shields.io/badge/tests-257%20passed-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-336%20passed-brightgreen.svg)](#testing)
 [![C++ Standards](https://img.shields.io/badge/C%2B%2B-11%2F14%2F17%2F20%2F23-blue.svg)](#c-standard-support)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Heimdall-SBOM_heimdall&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Heimdall-SBOM_heimdall)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Heimdall-SBOM_heimdall&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Heimdall-SBOM_heimdall)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Heimdall-SBOM_heimdall&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Heimdall-SBOM_heimdall)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Heimdall-SBOM_heimdall&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Heimdall-SBOM_heimdall)
+[![Coverage](https://img.shields.io/badge/coverage-47.3%25-yellow.svg)](build/coverage/html/index.html)
 
 ## Features
 
@@ -29,6 +30,16 @@ A comprehensive Software Bill of Materials (SBOM) generation plugin that works w
 - **Multi-Compiler Support**: Automatic detection and selection of GCC and Clang versions
 - **SCL Integration**: Support for Software Collections (SCL) on RHEL/Rocky/CentOS
 - **Enhanced Test Coverage**: Recent improvements added 151 new test cases for SBOM validation, comparison, and plugin functionality
+
+## Code Coverage
+
+- **Current coverage:** ![Coverage](https://img.shields.io/badge/coverage-47.3%25-yellow.svg)
+- Coverage is generated using `tests/coverage.sh` and includes all source files, including `src/tools/*.cpp`.
+- To update the badge and report, run:
+  ```bash
+  ./tests/coverage.sh
+  ```
+- The full HTML report is available at `build/coverage/html/index.html` after running the script.
 
 ## Build System and Compatibility
 
@@ -91,7 +102,8 @@ Heimdall supports multiple C++ standards with automatic compiler and LLVM versio
 We provide an automated setup script that detects your Linux distribution and installs all necessary dependencies:
 
 ```bash
-git clone https://github.com/your-org/heimdall.git
+git clone --recurse-submodules https://github.com/your-org/heimdall.git
+
 cd heimdall
 
 # Run the automated setup script

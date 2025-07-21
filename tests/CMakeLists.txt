@@ -64,9 +64,10 @@ if(CMAKE_CXX_STANDARD GREATER_EQUAL 11)
         
         # Docker container exclusions
         # Skip package manager tests in Docker containers where they may fail
-        if(filename STREQUAL "test_package_manager_and_archive.cpp")
-            continue()
-        endif()
+        # Note: This has been modified to use mock files instead of system binaries
+        # if(filename STREQUAL "test_package_manager_and_archive.cpp")
+        #     continue()
+        # endif()
         
         list(APPEND TEST_SOURCES ${source})
     endforeach()
@@ -182,6 +183,8 @@ if(CMAKE_CXX_STANDARD GREATER_EQUAL 11)
     enable_testing()
     include(GoogleTest)
     gtest_discover_tests(heimdall-tests)
+
+    target_link_libraries(heimdall-tests PRIVATE nlohmann_json_schema_validator)
 
     # Link stdc++fs for C++17 on Linux only
     if(CMAKE_CXX_STANDARD EQUAL 17 AND UNIX AND NOT APPLE)

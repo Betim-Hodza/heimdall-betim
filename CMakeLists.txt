@@ -114,26 +114,22 @@ if(CMAKE_CXX_STANDARD LESS 17)
         if(CMAKE_CXX_STANDARD LESS 11)
             # Already handled above
         else()
-            # C++11 mode - update DWARF support based on LLVM version
-            if(LLVM_VERSION_MAJOR GREATER_EQUAL 18 AND LLVM_VERSION_MAJOR LESS_EQUAL 19)
+            # C++11 mode - disable DWARF for LLVM 18+ to avoid template instantiation issues
+            if(LLVM_VERSION_MAJOR GREATER_EQUAL 18)
+                set(HEIMDALL_NO_DWARF 1 CACHE INTERNAL "No DWARF support for C++11 with LLVM 18+" FORCE)
+                unset(HEIMDALL_BASIC_DWARF CACHE)
+                message(STATUS "C++11 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_NO_DWARF enabled (avoiding LLVM template issues)")
+            else()
                 set(HEIMDALL_BASIC_DWARF 1 CACHE INTERNAL "Basic DWARF support for C++11" FORCE)
                 unset(HEIMDALL_NO_DWARF CACHE)
                 message(STATUS "C++11 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_BASIC_DWARF enabled")
-            else()
-                set(HEIMDALL_NO_DWARF 1 CACHE INTERNAL "No DWARF support for C++11" FORCE)
-                unset(HEIMDALL_BASIC_DWARF CACHE)
-                message(STATUS "C++11 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_NO_DWARF enabled")
             endif()
         endif()
     else()
-        # C++14 mode - update DWARF support based on LLVM version
-        if(LLVM_VERSION_MAJOR GREATER_EQUAL 18 AND LLVM_VERSION_MAJOR LESS_EQUAL 19)
-            set(HEIMDALL_BASIC_DWARF 1 CACHE INTERNAL "Basic DWARF support for C++14" FORCE)
-            message(STATUS "C++14 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_BASIC_DWARF enabled")
-        else()
-            set(HEIMDALL_BASIC_DWARF 1 CACHE INTERNAL "Basic DWARF support" FORCE)
-            message(STATUS "C++14 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_BASIC_DWARF enabled")
-        endif()
+        # C++14 mode - use lightweight DWARF parser instead of LLVM
+        set(HEIMDALL_BASIC_DWARF 1 CACHE INTERNAL "Basic DWARF support for C++14 (lightweight parser)" FORCE)
+        unset(HEIMDALL_NO_DWARF CACHE)
+        message(STATUS "C++14 mode with LLVM ${LLVM_VERSION_MAJOR}: HEIMDALL_BASIC_DWARF enabled (using lightweight parser)")
     endif()
 endif()
 
@@ -178,16 +174,42 @@ if(ENABLE_BENCHMARKS)
     add_definitions(-DENABLE_BENCHMARKS=1)
 endif()
 
+# Ensure json-schema-validator public header is in the expected include path
+add_custom_command(
+    OUTPUT ${CMAKE_SOURCE_DIR}/external/json-schema-validator/include/nlohmann/json-schema.hpp
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/external/json-schema-validator/include/nlohmann
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/external/json-schema-validator/src/nlohmann/json-schema.hpp
+        ${CMAKE_SOURCE_DIR}/external/json-schema-validator/include/nlohmann/json-schema.hpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/external/json-schema-validator/src/nlohmann/json-schema.hpp
+    COMMENT "Copying json-schema.hpp to include directory"
+)
+
+add_custom_target(copy_json_schema_header ALL
+    DEPENDS ${CMAKE_SOURCE_DIR}/external/json-schema-validator/include/nlohmann/json-schema.hpp
+)
+
 # Include directories
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(include)
+include_directories(${CMAKE_SOURCE_DIR}/external/json/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/json-schema-validator/include)
 include_directories(src)
+# Add external directory for shared headers
+include_directories(${CMAKE_SOURCE_DIR}/external)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Add for external json validation library
+add_subdirectory(external/json)
+add_subdirectory(external/json-schema-validator)
 
 # Add src directory
 add_subdirectory(src)
 
 # Add examples directory (for test binary)
 add_subdirectory(examples)
+
 
 # Add tests if enabled
 if(BUILD_TESTS)
